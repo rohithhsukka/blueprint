@@ -1,7 +1,8 @@
 import os
+import re
 import io
 import datetime
-from flask import Flask, request, send_file, jsonify
+from flask import Flask,render_template, request, send_file, jsonify
 from openai import OpenAI
 from dotenv import load_dotenv
 from reportlab.lib.pagesizes import letter
@@ -173,11 +174,15 @@ SOP_DATA = {
 
 # --- Helper Functions ---
 
+import re
+
 def format_text_for_reportlab(text):
     """ Basic formatting conversion for ReportLab Paragraphs """
     text = text.replace('\n', '<br/>')
-    # Basic bold handling - assumes **text** format from SOPs
-    text = text.replace('**', '<b>').replace('**', '</b>', 1) # Replace pairs
+    
+    # Use regex to properly replace paired ** markers with <b> tags
+    text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
+    
     # Handle bullet points (simple conversion)
     text = text.replace('- ', '<bullet>&bull;</bullet> ')
     return text
@@ -375,122 +380,124 @@ def generate_blueprint_endpoint():
 # Basic route for testing if the server is up
 @app.route('/')
 def index():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Performance Marketing Blueprint Generator</title>
-        <style>
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                max-width: 800px;
-                margin: 40px auto;
-                padding: 20px;
-                background-color: #f5f5f5;
-            }
-            .container {
-                background-color: white;
-                padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            h1 {
-                color: #2c3e50;
-                text-align: center;
-                margin-bottom: 30px;
-            }
-            .form-group {
-                margin-bottom: 20px;
-            }
-            label {
-                display: block;
-                margin-bottom: 5px;
-                color: #34495e;
-                font-weight: bold;
-            }
-            input[type="text"], textarea {
-                width: 100%;
-                padding: 8px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-                font-size: 14px;
-            }
-            textarea {
-                height: 100px;
-                resize: vertical;
-            }
-            input[type="submit"] {
-                background-color: #3498db;
-                color: white;
-                padding: 12px 20px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                width: 100%;
-                font-size: 16px;
-                transition: background-color 0.3s;
-            }
-            input[type="submit"]:hover {
-                background-color: #2980b9;
-            }
-            .required {
-                color: #e74c3c;
-            }
-            .helper-text {
-                font-size: 12px;
-                color: #7f8c8d;
-                margin-top: 4px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Performance Marketing Blueprint Generator</h1>
+     return render_template('index.html')
+    # return """
+    # <!DOCTYPE html>
+    # <html>
+    # <head>
+    #     <title>Performance Marketing Blueprint Generator</title>
+    #     <style>
+    #         body {
+    #             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    #             max-width: 800px;
+    #             margin: 40px auto;
+    #             padding: 20px;
+    #             background-color: #f5f5f5;
+    #         }
+    #         .container {
+    #             background-color: white;
+    #             padding: 30px;
+    #             border-radius: 8px;
+    #             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    #         }
+    #         h1 {
+    #             color: #2c3e50;
+    #             text-align: center;
+    #             margin-bottom: 30px;
+    #         }
+    #         .form-group {
+    #             margin-bottom: 20px;
+    #         }
+    #         label {
+    #             display: block;
+    #             margin-bottom: 5px;
+    #             color: #34495e;
+    #             font-weight: bold;
+    #         }
+    #         input[type="text"], textarea {
+    #             width: 100%;
+    #             padding: 8px;
+    #             border: 1px solid #ddd;
+    #             border-radius: 4px;
+    #             box-sizing: border-box;
+    #             font-size: 14px;
+    #         }
+    #         textarea {
+    #             height: 100px;
+    #             resize: vertical;
+    #         }
+    #         input[type="submit"] {
+    #             background-color: #3498db;
+    #             color: white;
+    #             padding: 12px 20px;
+    #             border: none;
+    #             border-radius: 4px;
+    #             cursor: pointer;
+    #             width: 100%;
+    #             font-size: 16px;
+    #             transition: background-color 0.3s;
+    #         }
+    #         input[type="submit"]:hover {
+    #             background-color: #2980b9;
+    #         }
+    #         .required {
+    #             color: #e74c3c;
+    #         }
+    #         .helper-text {
+    #             font-size: 12px;
+    #             color: #7f8c8d;
+    #             margin-top: 4px;
+    #         }
+    #     </style>
+    # </head>
+    # <body>
+    #     <div class="container">
+    #         <h1>Performance Marketing Blueprint Generator</h1>
             
-            <form action="/generate_blueprint" method="post">
-                <div class="form-group">
-                    <label>Company Name <span class="required">*</span></label>
-                    <input type="text" name="company_name" required placeholder="Enter your company name">
-                </div>
+    #         <form action="/generate_blueprint" method="post">
+    #             <div class="form-group">
+    #                 <label>Company Name <span class="required">*</span></label>
+    #                 <input type="text" name="company_name" required placeholder="Enter your company name">
+    #             </div>
                 
-                <div class="form-group">
-                    <label>Product/Service <span class="required">*</span></label>
-                    <input type="text" name="product_service" required placeholder="Describe your main product or service">
-                </div>
+    #             <div class="form-group">
+    #                 <label>Product/Service <span class="required">*</span></label>
+    #                 <input type="text" name="product_service" required placeholder="Describe your main product or service">
+    #             </div>
                 
-                <div class="form-group">
-                    <label>Target Audience <span class="required">*</span></label>
-                    <input type="text" name="target_audience" required placeholder="Who is your ideal customer?">
-                </div>
+    #             <div class="form-group">
+    #                 <label>Target Audience <span class="required">*</span></label>
+    #                 <input type="text" name="target_audience" required placeholder="Who is your ideal customer?">
+    #             </div>
                 
-                <div class="form-group">
-                    <label>Key Business Goal <span class="required">*</span></label>
-                    <input type="text" name="business_goal" required placeholder="What is your primary business objective?">
-                </div>
+    #             <div class="form-group">
+    #                 <label>Key Business Goal <span class="required">*</span></label>
+    #                 <input type="text" name="business_goal" required placeholder="What is your primary business objective?">
+    #             </div>
                 
-                <div class="form-group">
-                    <label>Website</label>
-                    <input type="text" name="website" placeholder="https://www.yourcompany.com">
-                    <div class="helper-text">Optional: Include your website URL</div>
-                </div>
+    #             <div class="form-group">
+    #                 <label>Website</label>
+    #                 <input type="text" name="website" placeholder="https://www.yourcompany.com">
+    #                 <div class="helper-text">Optional: Include your website URL</div>
+    #             </div>
                 
-                <div class="form-group">
-                    <label>Current Marketing Efforts</label>
-                    <textarea name="current_marketing" placeholder="Describe your current marketing activities..."></textarea>
-                    <div class="helper-text">Optional: Tell us about your existing marketing strategies</div>
-                </div>
+    #             <div class="form-group">
+    #                 <label>Current Marketing Efforts</label>
+    #                 <textarea name="current_marketing" placeholder="Describe your current marketing activities..."></textarea>
+    #                 <div class="helper-text">Optional: Tell us about your existing marketing strategies</div>
+    #             </div>
                 
-                <input type="submit" value="Generate Blueprint PDF">
-            </form>
-        </div>
-    </body>
-    </html>
-    """
+    #             <input type="submit" value="Generate Blueprint PDF">
+    #         </form>
+    #     </div>
+    # </body>
+    # </html>
+    # """
 
 # --- Main Execution ---
+# if __name__ == '__main__':
+#     # Use waitress or gunicorn for production instead of Flask's built-in server
+#     app.run(debug=True, port=5001) # Run on a different port if 5000 is common
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    print(port)
-# Use Render’s assigned PORT
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=10000)  # Render assigns a port dynamically
