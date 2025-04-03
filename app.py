@@ -489,6 +489,8 @@ def index():
     """
 
 # --- Main Execution ---
-if __name__ == '__main__':
-    # Use waitress or gunicorn for production instead of Flask's built-in server
-    app.run(debug=True, port=5001) # Run on a different port if 5000 is common
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    print(port)
+# Use Render’s assigned PORT
+    app.run(host="0.0.0.0", port=port)
