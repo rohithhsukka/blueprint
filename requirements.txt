@@ -189,7 +189,6 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-json-logger==3.3.0
 pytz==2025.1
-pywin32==309
 pywinpty==2.0.15
 PyYAML==6.0.2
 pyzmq==26.3.0
@@ -242,4 +241,3 @@ wrapt==1.17.2
 wsproto==1.2.0
 yarl==1.18.3
 zipp==3.21.0
-pywin32==309; sys_platform == "win32"
